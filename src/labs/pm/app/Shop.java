@@ -42,6 +42,16 @@ public class Shop {
         pm.printProductReport();
 
         p1 = pm.reviewProduct(p1, Rating.FOUR_STAR, "Nice hot cup of tea");
+        p1 = pm.reviewProduct(p1, Rating.TWO_STAR, "Rather weak good");
+        p1 = pm.reviewProduct(p1, Rating.FOUR_STAR, "Fine tea");
+        p1 = pm.reviewProduct(p1, Rating.FOUR_STAR, "Good tea");
+        p1 = pm.reviewProduct(p1, Rating.FIVE_STAR, "Amazing hot cup of tea");
+        p1 = pm.reviewProduct(p1, Rating.THREE_STAR, "Okeish tea");
+
+
+
+
+
         pm.printProductReport();
         
 //        Product p2 = pm.createProduct(102, "Coffee", BigDecimal.valueOf(1.99), Rating.FOUR_STAR);

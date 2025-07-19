@@ -23,6 +23,7 @@ import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -33,7 +34,7 @@ public class ProductManager {
     private DateTimeFormatter dateFormat;
     private NumberFormat moneyFormat;
     private Product product;
-    private Review review;
+    private Review[] reviews =  new Review[5];
 
     public ProductManager(Locale locale) {
         this.locale = locale;
@@ -53,7 +54,19 @@ public class ProductManager {
     }  
 
     public Product reviewProduct(Product product, Rating rating, String comment) {
-        review = new Review(rating, comment);
+        if (reviews[reviews.length - 1] != null) {
+            reviews = Arrays.copyOf(reviews, reviews.length + 5);
+        }
+        int sum = 0, i = 0;
+        boolean reviewed = false;
+        while (i < reviews.length && !reviewed) {
+            if (reviews[i] == null) {
+                reviews[i] = new Review(rating, comment);
+                reviewed = true;
+            }
+            sum += reviews[i].rating().ordinal();
+            i++;
+        }
         this.product = product.applyRating(rating);
         return this.product;
     }
@@ -73,16 +86,21 @@ public class ProductManager {
 
         txt.append('\n');
         
-        // Format review details or display no reviews message
-        if (review != null) {
-            txt.append(MessageFormat.format(resources.getString("review"), 
-                review.rating().getStar(), 
+        // Format reviews details or display no reviews message
+
+        for (Review review: reviews ) {
+            if (review == null) {
+                break;
+            }
+            txt.append(MessageFormat.format(resources.getString("review"),
+                review.rating().getStar(),
                 review.comment()));
-        } else {
-            txt.append(resources.getString("no.reviews"));
+            txt.append('\n');
         }
-        
-        txt.append('\n');
+        if (reviews[0] == null) {
+            txt.append(resources.getString("no.reviews"));
+            txt.append('\n');
+        }
         System.out.println(txt);
     }
 }
