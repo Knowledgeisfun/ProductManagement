@@ -25,6 +25,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.*;
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class ProductManager {
 
@@ -51,7 +52,11 @@ public class ProductManager {
         Product product = new Drink(id, name, price, rating);
         products.putIfAbsent(product, new ArrayList<>());
         return product;
-    }  
+    }
+
+    public Product reviewProduct(int id, Rating rating ,String comment) {
+        return reviewProduct(findProduct(id), rating, comment);
+    }
 
     public Product reviewProduct(Product product, Rating rating, String comment) {
         List<Review> reviews = products.get(product);
@@ -66,9 +71,25 @@ public class ProductManager {
         return product;
     }
 
+    public Product findProduct(int id) {
+        Product result = null;
+        for (Product product : products.keySet()) {
+            if (product.getId() == id) {
+                result = product;
+                break;
+            }
+        }
+        return result;
+    }
+
+    public void printProductReport(int id) {
+        printProductReport(findProduct(id));
+    }
+
     public void printProductReport(Product product) {
         List<Review> reviews = products.get(product);
         StringBuilder txt = new StringBuilder();
+        Collections.sort(reviews);
         // Determine product type and format the product details
         String type = (product instanceof Food) ? resources.getString("food") : resources.getString("drink");
 

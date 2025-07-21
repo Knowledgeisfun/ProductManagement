@@ -74,7 +74,7 @@ public sealed abstract class Product implements Rateable<Product> permits Food, 
     public boolean equals(Object o) { //overriding equals method of object class to our need the 
         if (this == o) return true;          //traditonal one will only check if both are pointing to the same    location in heap or not 
         if ( o instanceof Product product) {
-            return id == product.id && Objects.equals(name, product.name);
+            return id == product.id;
         }
         return false;
     }
