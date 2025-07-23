@@ -23,6 +23,7 @@ import labs.pm.data.Rating;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Locale;
+import java.util.Comparator;
 
 public class Shop {
 
@@ -38,7 +39,7 @@ public class Shop {
 
 
         pm.createProduct(101, "Tea", BigDecimal.valueOf(1.99), Rating.NOT_RATED, LocalDate.now());
-        pm.printProductReport(101);
+        //pm.printProductReport(101);
 
         pm.reviewProduct(101, Rating.FOUR_STAR, "Nice hot cup of tea");
         pm.reviewProduct(101, Rating.TWO_STAR, "Rather weak good");
@@ -47,7 +48,7 @@ public class Shop {
         pm.reviewProduct(101, Rating.FIVE_STAR, "Amazing hot cup of tea");
         pm.reviewProduct(101, Rating.THREE_STAR, "Okeish tea");
 
-        pm.printProductReport(101);
+        //pm.printProductReport(101);
 
         pm.createProduct(102, "Coffee",
                 BigDecimal.valueOf(1.99), Rating.NOT_RATED);
@@ -55,7 +56,7 @@ public class Shop {
         pm.reviewProduct(102, Rating.ONE_STAR, "Where is the milk?!");
         pm.reviewProduct(102, Rating.FIVE_STAR,
                 "It's perfect with ten spoons of sugar!");
-        pm.printProductReport(102);
+        //pm.printProductReport(102);
 
         pm.createProduct(103, "Cake",
                 BigDecimal.valueOf(3.99), Rating.NOT_RATED,
@@ -64,20 +65,20 @@ public class Shop {
         pm.reviewProduct(103, Rating.FOUR_STAR,
                 "Good, but I've expected more chocolate");
         pm.reviewProduct(103, Rating.FIVE_STAR, "This cake is perfect!");
-        pm.printProductReport(103);
+        //pm.printProductReport(103);
 
         pm.createProduct(104, "Cookie",
                 BigDecimal.valueOf(2.99), Rating.NOT_RATED,
                 LocalDate.now());
         pm.reviewProduct(104, Rating.THREE_STAR, "Just another cookie");
         pm.reviewProduct(104, Rating.THREE_STAR, "Ok");
-        pm.printProductReport(104);
+        //pm.printProductReport(104);
 
         Product p5 = pm.createProduct(105, "Hot Chocolate",
                 BigDecimal.valueOf(2.50), Rating.NOT_RATED);
         p5 = pm.reviewProduct(p5, Rating.FOUR_STAR, "Tasty!");
         p5 = pm.reviewProduct(p5, Rating.FOUR_STAR, "No bad at all");
-        pm.printProductReport(p5);
+        //pm.printProductReport(p5);
 
         Product p6 = pm.createProduct(106, "Chocolate",
                 BigDecimal.valueOf(2.50), Rating.NOT_RATED,
@@ -86,12 +87,18 @@ public class Shop {
         p6 = pm.reviewProduct(p6, Rating.THREE_STAR, "Better then cookie");
         p6 = pm.reviewProduct(p6, Rating.TWO_STAR, "Too bitter");
         p6 = pm.reviewProduct(p6, Rating.ONE_STAR, "I don't get it!");
-        pm.printProductReport(p6);
-        
+        //pm.printProductReport(p6);
+
+        pm.printProduct( (p1, p2) -> p2.getRating().ordinal() - p1.getRating().ordinal());
+        pm.printProduct((p1, p2) -> p2.getPrice().compareTo(p1.getPrice()));
+
+        Comparator<Product> ratingSorter = (p1, p2) -> p2.getRating().ordinal() - p1.getRating().ordinal();
+        Comparator<Product> priceSorter = (p1, p2) -> p2.getPrice().compareTo(p1.getPrice());
+
+        pm.printProduct(ratingSorter.thenComparing(priceSorter));
+        pm.printProduct(ratingSorter.thenComparing(priceSorter).reversed());
 
 
-
-        
         // if (p3 instanceof Food f) {
         //     System.out.println(f.getBestBefore());
         // }

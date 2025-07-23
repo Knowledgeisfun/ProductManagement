@@ -27,6 +27,7 @@ import java.util.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Set;
+import java.util.Comparator;
 
 public class ProductManager {
 
@@ -126,6 +127,18 @@ public class ProductManager {
             txt.append('\n');
 
         }
+        System.out.println(txt);
+    }
+
+    public void printProduct(Comparator<Product> sorter) {
+        List<Product> productList = new ArrayList<>(products.keySet());
+        productList.sort(sorter);
+        StringBuilder txt = new StringBuilder();
+        for (Product product : productList) {
+            txt.append(formatter.formatProduct(product));
+            txt.append('\n');
+        }
+
         System.out.println(txt);
     }
 
