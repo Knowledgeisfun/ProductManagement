@@ -28,6 +28,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Set;
 import java.util.Comparator;
+import java.util.function.Predicate;
+import java.util.logging.Level;
+import java.util.stream.Collectors;
+import java.util.logging.Logger;
 
 public class ProductManager {
 
@@ -42,7 +46,7 @@ public class ProductManager {
             );
 
     private ResourceFormatter formatter;
-
+    private static final Logger logger = Logger.getLogger(ProductManager.class.getName());
     private Map<Product, List<Review>> products = new HashMap<>();
 
     public void changeLocal(String langaugeTag) {
@@ -74,35 +78,51 @@ public class ProductManager {
     }
 
     public Product reviewProduct(int id, Rating rating ,String comment) {
-        return reviewProduct(findProduct(id), rating, comment);
+        try {
+            return reviewProduct(findProduct(id), rating, comment);
+        } catch (ProductManagerException e) {
+            logger.log(Level.INFO, e.getMessage());
+            return null;
+        }
     }
 
-    public Product reviewProduct(Product product, Rating rating, String comment) {
+    public Product reviewProduct(Product product, Rating rating, String comments) {
         List<Review> reviews = products.get(product);
         products.remove(product, reviews);
-        reviews.add(new Review(rating, comment));
-        int sum = 0;
-        for (Review review : reviews) {
-            sum += review.rating().ordinal();
-        }
-        product = product.applyRating(Rateable.convert(Math.round((float) sum/ reviews.size())));
+        reviews.add(new Review(rating, comments));
+        // int sum = 0;
+        // for (Review review : reviews) {
+        //     sum += review.rating().ordinal();
+        // }
+        // product = product.applyRating(Rateable.convert(Math.round((float) sum / reviews.size())));
+        product = product.applyRating(Rateable
+                .convert((int) Math.round(reviews.stream().mapToInt(r -> r.rating().ordinal()).average().orElse(0))));
         products.put(product, reviews);
         return product;
     }
 
-    public Product findProduct(int id) {
-        Product result = null;
-        for (Product product : products.keySet()) {
-            if (product.getId() == id) {
-                result = product;
-                break;
-            }
-        }
-        return result;
+    public Product findProduct(int id) throws ProductManagerException {
+//        Product result = null;
+//        for (Product product : products.keySet()) {
+//            if (product.getId() == id) {
+//                result = product;
+//                break;
+//            }
+//        }
+//        return result;
+        return products.keySet()
+                .stream()
+                .filter(p -> p.getId() == id )
+                .findFirst()
+                .orElseThrow( () -> new ProductManagerException("Product with id "+id+" not found" ));
     }
 
     public void printProductReport(int id) {
-        printProductReport(findProduct(id));
+        try {
+            printProductReport(findProduct(id));
+        } catch (ProductManagerException e) {
+            logger.log(Level.INFO, e.getMessage());
+        }
     }
 
     public void printProductReport(Product product) {
@@ -117,29 +137,41 @@ public class ProductManager {
         
         // Format reviews details or display no reviews message
 
-        for (Review review: reviews ) {
-            txt.append(formatter.formatReview(review));
-            txt.append('\n');
-        }
-
+//        for (Review review: reviews ) {
+//            txt.append(formatter.formatReview(review));
+//            txt.append('\n');
+//        }
+//
         if (reviews.isEmpty()) {
-            txt.append(formatter.getText("noReviews"));
-            txt.append('\n');
-
+            txt.append(formatter.getText("noReviews") + '\n');
+       } else {
+            txt.append(reviews.stream().map(r -> formatter.formatReview(r) + '\n').collect(Collectors.joining()));
+//            reviews.stream().forEach(review -> txt.append(formatter.formatReview(review) + '\n')); this logic won't work in parallel processing
         }
         System.out.println(txt);
     }
 
-    public void printProduct(Comparator<Product> sorter) {
-        List<Product> productList = new ArrayList<>(products.keySet());
-        productList.sort(sorter);
+    public void printProduct(Predicate<Product> filter, Comparator<Product> sorter) {
+//        List<Product> productList = new ArrayList<>(products.keySet());
+//        productList.sort(sorter);
         StringBuilder txt = new StringBuilder();
-        for (Product product : productList) {
-            txt.append(formatter.formatProduct(product));
-            txt.append('\n');
-        }
+//        for (Product product : productList) {
+//            txt.append(formatter.formatProduct(product));
+//            txt.append('\n');
+//        }
+        products.keySet().stream().sorted(sorter).filter(filter).forEach(p -> txt.append(formatter.formatProduct(p) + '\n'));
 
         System.out.println(txt);
+    }
+
+    public Map<String, String> getDiscount() {
+        return products.keySet().stream().collect(Collectors.groupingBy(
+                product -> product.getRating().getStar(),
+                Collectors.collectingAndThen(Collectors.summingDouble(
+                        product -> product.getDiscount().doubleValue()),
+                        discount -> formatter.moneyFormat.format(discount)
+                ))
+        );
     }
 
     private static class ResourceFormatter{
